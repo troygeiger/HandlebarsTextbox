@@ -101,23 +101,12 @@ namespace HandlebarTextboxTest
                 }
                 var segment = spaceParts[segIdx];
                 // Partial context: segment starts with '>' or caret is after '>' and whitespace
-                bool isAfterPartial = token.StartsWith('>');
+                bool isAfterPartial = token.TrimStart().StartsWith('>');
                 string trimmedSegment = segment.TrimStart();
                 if (isAfterPartial)
                 {
-                    string partialPrefix = "";
-                    if (segment.StartsWith(">"))
-                    {
-                        partialPrefix = segment;
-                        if (string.IsNullOrWhiteSpace(partialPrefix))
-                        {
-                            isAfterPartial = true;
-                        }
-                    }
-                    else
-                    {
-                        isAfterPartial = true;
-                    }
+                    string partialPrefix = segment == ">" ? string.Empty : segment;
+                    
                     var partialMeta = Suggestions
                         .Where(kv => kv.Type == SuggestionType.Partial && isAfterPartial && kv.Name.StartsWith(partialPrefix, StringComparison.OrdinalIgnoreCase))
                         .Select(kv => kv.Name)
@@ -200,6 +189,7 @@ namespace HandlebarTextboxTest
                         suggestionListBox.Focus();
                     }
                     e.Handled = true;
+                    e.SuppressKeyPress = true;
                     return;
                 }
                 else if (e.KeyCode == Keys.Enter)
@@ -207,6 +197,7 @@ namespace HandlebarTextboxTest
                     // Select the suggestion if popup is visible
                     InsertSelectedSuggestion();
                     e.Handled = true;
+                    e.SuppressKeyPress = true;
                     return;
                 }
             }
@@ -256,11 +247,13 @@ namespace HandlebarTextboxTest
             {
                 InsertSelectedSuggestion();
                 e.Handled = true;
+                e.SuppressKeyPress = true;
             }
             else if (e.KeyCode == Keys.Escape)
             {
                 HideSuggestion();
                 e.Handled = true;
+                e.SuppressKeyPress = true;
             }
         }
 
