@@ -84,8 +84,25 @@ namespace HandlebarTextboxTest
 
             if (TryGetToken(out var token))
             {
-                // Split token by '.' for nested suggestions
-                var pathParts = token.Split('.');
+                // Split token by spaces, find the segment where the caret is
+                int caret = this.SelectionStart;
+                int openIdx = this.Text.LastIndexOf("{{", caret - 1, caret);
+                int caretInToken = caret - (openIdx + 2);
+                var spaceParts = token.Split(' ');
+                int segStart = 0, segEnd = 0, segIdx = 0;
+                for (int i = 0; i < spaceParts.Length; i++)
+                {
+                    segEnd = segStart + spaceParts[i].Length;
+                    if (caretInToken >= segStart && caretInToken <= segEnd)
+                    {
+                        segIdx = i;
+                        break;
+                    }
+                    segStart = segEnd + 1;
+                }
+                var segment = spaceParts[segIdx];
+                // Split segment by '.' for nested suggestions
+                var pathParts = segment.Split('.');
                 var current = Suggestions;
                 SuggestionMetadata? node = null;
                 for (int i = 0; i < pathParts.Length - 1; i++)
@@ -210,14 +227,31 @@ namespace HandlebarTextboxTest
         {
             if (suggestionListBox.SelectedItem is string item && TryGetToken(out var token))
             {
-                // Split token by '.' for nested suggestions
-                var start = this.SelectionStart - token.Length;
-                var pathParts = token.Split('.');
-                // Replace only the last part
+                int caret = this.SelectionStart;
+                int openIdx = this.Text.LastIndexOf("{{", caret - 1, caret);
+                int start = this.SelectionStart - token.Length;
+                int caretInToken = caret - (openIdx + 2);
+                var spaceParts = token.Split(' ');
+                int segStart = 0, segEnd = 0, segIdx = 0;
+                for (int i = 0; i < spaceParts.Length; i++)
+                {
+                    segEnd = segStart + spaceParts[i].Length;
+                    if (caretInToken >= segStart && caretInToken <= segEnd)
+                    {
+                        segIdx = i;
+                        break;
+                    }
+                    segStart = segEnd + 1;
+                }
+                // Replace only the segment under the caret
+                var segment = spaceParts[segIdx];
+                var pathParts = segment.Split('.');
                 pathParts[pathParts.Length - 1] = item;
-                var newToken = string.Join(".", pathParts);
+                var newSegment = string.Join(".", pathParts);
+                spaceParts[segIdx] = newSegment;
+                var newToken = string.Join(" ", spaceParts);
                 this.Text = this.Text.Remove(start, token.Length).Insert(start, newToken);
-                this.SelectionStart = start + newToken.Length;
+                this.SelectionStart = start + segStart + newSegment.Length;
                 HideSuggestion();
             }
         }
@@ -226,31 +260,74 @@ namespace HandlebarTextboxTest
         {
             try
             {
-                for (int i = this.SelectionStart - 1; i >= 0; i--)
+                int caret = this.SelectionStart;
+                string text = this.Text;
+                // Find the nearest '{{' before the caret
+                int openIdx = text.LastIndexOf("{{", caret - 1, caret);
+                if (openIdx == -1)
                 {
-                    if (this.Text[i] == '{')
+                    token = null;
+                    return false;
+                }
+                // Find the nearest '}}' after the caret
+                int closeIdx = text.IndexOf("}}", openIdx + 2);
+                // Only allow if caret is strictly inside the brackets
+                if (closeIdx != -1)
+                {
+                    if (!(openIdx + 2 <= caret && caret <= closeIdx))
                     {
-                        int j = i + 1;
-                        while (j < this.Text.Length && this.Text[j] != '}')
+                        token = null;
+                        return false;
+                    }
+                    // Ensure no stray braces between caret and closeIdx
+                    for (int k = caret; k < closeIdx; k++)
+                    {
+                        if (text[k] == '{' || text[k] == '}')
                         {
-                            j++;
-                        }
-                        // Only extract token if caret is before or at the closing bracket
-                        if ((j < this.Text.Length && this.Text[j] == '}') && this.SelectionStart <= j)
-                        {
-                            i++;
-                            token = this.Text.Substring(i, j - i);
-                            return true;
-                        }
-                        // Or if no closing bracket, allow token extraction
-                        else if (j == this.Text.Length)
-                        {
-                            i++;
-                            token = this.Text.Substring(i, j - i);
-                            return true;
+                            token = null;
+                            return false;
                         }
                     }
+                    // Token is between openIdx+2 and closeIdx
+                    token = text.Substring(openIdx + 2, closeIdx - (openIdx + 2));
                 }
+                else
+                {
+                    // No closing '}}', only allow if caret is after '{{' and before any stray braces or end of text
+                    if (!(openIdx + 2 <= caret && caret <= text.Length))
+                    {
+                        token = null;
+                        return false;
+                    }
+                    for (int k = caret; k < text.Length; k++)
+                    {
+                        if (text[k] == '{' || text[k] == '}')
+                        {
+                            token = null;
+                            return false;
+                        }
+                    }
+                    token = text.Substring(openIdx + 2, caret - (openIdx + 2));
+                }
+                // Check if caret is inside single or double quotes within the token
+                int caretInToken = caret - (openIdx + 2);
+                if (caretInToken < 0 || caretInToken > token.Length)
+                {
+                    token = null;
+                    return false;
+                }
+                bool inSingleQuotes = false, inDoubleQuotes = false;
+                for (int i = 0; i < caretInToken; i++)
+                {
+                    if (token[i] == '\'' && !inDoubleQuotes) inSingleQuotes = !inSingleQuotes;
+                    if (token[i] == '"' && !inSingleQuotes) inDoubleQuotes = !inDoubleQuotes;
+                }
+                if (inSingleQuotes || inDoubleQuotes)
+                {
+                    token = null;
+                    return false;
+                }
+                return true;
             }
             catch (Exception)
             {
