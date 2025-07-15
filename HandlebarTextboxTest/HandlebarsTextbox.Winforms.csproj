@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>HandlebarsTextbox.Winforms</AssemblyName>
+    <RootNamespace>HandlebarsTextbox.Winforms</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="HandlebarTextboxTest.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,12 +1,12 @@
-namespace HandlebarTextboxTest
-{
-    public partial class Form1 : Form
-    {
-        public Form1()
-        {
-            InitializeComponent();
+namespace HandlebarsTextbox.Winforms.Test;
 
-            handlebarTextbox1.Suggestions.AddRange([
+public partial class Form1 : Form
+{
+    public Form1()
+    {
+        InitializeComponent();
+
+        handlebarTextbox1.Suggestions.AddRange([
                 new SuggestionMetadata
                 {
                     Name = "Order",
@@ -27,6 +27,5 @@ namespace HandlebarTextboxTest
                 new SuggestionMetadata { Name = "MyPartial", Type = SuggestionType.Partial },
                 new SuggestionMetadata { Name = "SomeHelper", Type = SuggestionType.Helper }
             ]);
-        }
     }
 }

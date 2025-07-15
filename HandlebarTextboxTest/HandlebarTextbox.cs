@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace HandlebarTextboxTest
+namespace HandlebarsTextbox.Winforms
 {
-    internal class HandlebarTextbox : TextBox
+    public class HandlebarTextbox : TextBox
     {
         private ToolStripDropDown suggestionDropDown;
         private ListBox suggestionListBox;
