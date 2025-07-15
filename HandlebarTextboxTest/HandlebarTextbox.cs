@@ -84,7 +84,6 @@ namespace HandlebarTextboxTest
 
             if (TryGetToken(out var token))
             {
-                // Split token by spaces, find the segment where the caret is
                 int caret = this.SelectionStart;
                 int openIdx = this.Text.LastIndexOf("{{", caret - 1, caret);
                 int caretInToken = caret - (openIdx + 2);
@@ -101,6 +100,48 @@ namespace HandlebarTextboxTest
                     segStart = segEnd + 1;
                 }
                 var segment = spaceParts[segIdx];
+                // Partial context: segment starts with '>' or caret is after '>' and whitespace
+                bool isAfterPartial = token.StartsWith('>');
+                string trimmedSegment = segment.TrimStart();
+                if (isAfterPartial)
+                {
+                    string partialPrefix = "";
+                    if (segment.StartsWith(">"))
+                    {
+                        partialPrefix = segment;
+                        if (string.IsNullOrWhiteSpace(partialPrefix))
+                        {
+                            isAfterPartial = true;
+                        }
+                    }
+                    else
+                    {
+                        isAfterPartial = true;
+                    }
+                    var partialMeta = Suggestions
+                        .Where(kv => kv.Type == SuggestionType.Partial && isAfterPartial && kv.Name.StartsWith(partialPrefix, StringComparison.OrdinalIgnoreCase))
+                        .Select(kv => kv.Name)
+                        .ToList();
+                    if (!isAfterPartial && partialMeta.Count == 1 && string.Equals(partialMeta[0], partialPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        HideSuggestion();
+                    }
+                    else if (partialMeta.Any())
+                    {
+                        ShowSuggestion(partialMeta, partialPrefix);
+                    }
+                    else
+                    {
+                        HideSuggestion();
+                    }
+                    return;
+                }
+                // Helper context: first segment is a helper
+                bool isHelper = false;
+                if (spaceParts.Length > 0 && Suggestions.Any(s => s.Type == SuggestionType.Helper && s.Name.Equals(spaceParts[0], StringComparison.OrdinalIgnoreCase)))
+                {
+                    isHelper = true;
+                }
                 // Split segment by '.' for nested suggestions
                 var pathParts = segment.Split('.');
                 var current = Suggestions;
@@ -117,18 +158,18 @@ namespace HandlebarTextboxTest
                 }
                 // Last part is what we're currently typing
                 var lastPart = pathParts.Last();
-                var meta = current
-                    .Where(kv => kv.Name.StartsWith(lastPart, StringComparison.OrdinalIgnoreCase))
+                var dataMeta = current
+                    .Where(kv => (isHelper ? kv.Type == SuggestionType.Data : true) && kv.Name.StartsWith(lastPart, StringComparison.OrdinalIgnoreCase))
                     .Select(kv => kv.Name)
                     .ToList();
                 // If there is a single exact match, do not show suggestions
-                if (meta.Count == 1 && string.Equals(meta[0], lastPart, StringComparison.OrdinalIgnoreCase))
+                if (dataMeta.Count == 1 && string.Equals(dataMeta[0], lastPart, StringComparison.OrdinalIgnoreCase))
                 {
                     HideSuggestion();
                 }
-                else if (meta.Any())
+                else if (dataMeta.Any())
                 {
-                    ShowSuggestion(meta, lastPart);
+                    ShowSuggestion(dataMeta, lastPart);
                 }
                 else
                 {
@@ -245,13 +286,21 @@ namespace HandlebarTextboxTest
                 }
                 // Replace only the segment under the caret
                 var segment = spaceParts[segIdx];
-                var pathParts = segment.Split('.');
-                pathParts[pathParts.Length - 1] = item;
-                var newSegment = string.Join(".", pathParts);
-                spaceParts[segIdx] = newSegment;
+                if (segment.StartsWith(">"))
+                {
+                    // For partials, preserve the '>'
+                    spaceParts[segIdx] = ">" + item;
+                }
+                else
+                {
+                    var pathParts = segment.Split('.');
+                    pathParts[pathParts.Length - 1] = item;
+                    var newSegment = string.Join(".", pathParts);
+                    spaceParts[segIdx] = newSegment;
+                }
                 var newToken = string.Join(" ", spaceParts);
                 this.Text = this.Text.Remove(start, token.Length).Insert(start, newToken);
-                this.SelectionStart = start + segStart + newSegment.Length;
+                this.SelectionStart = start + segStart + spaceParts[segIdx].Length;
                 HideSuggestion();
             }
         }
@@ -274,7 +323,7 @@ namespace HandlebarTextboxTest
                 // Only allow if caret is strictly inside the brackets
                 if (closeIdx != -1)
                 {
-                    if (!(openIdx + 2 <= caret && caret <= closeIdx))
+                    if (!(openIdx + 2 <= caret && caret < closeIdx))
                     {
                         token = null;
                         return false;

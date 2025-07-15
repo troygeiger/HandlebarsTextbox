@@ -6,11 +6,19 @@ using System.Threading.Tasks;
 
 namespace HandlebarTextboxTest
 {
+    internal enum SuggestionType
+    {
+        Data,
+        Partial,
+        Helper
+    }
+
     internal class SuggestionMetadata
     {
         private List<SuggestionMetadata>? children;
 
         public required string Name { get; set; }
+        public SuggestionType Type { get; set; } = SuggestionType.Data;
 
         public List<SuggestionMetadata> Children
         {
