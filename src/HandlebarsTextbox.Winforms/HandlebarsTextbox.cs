@@ -10,6 +10,9 @@ using System.Windows.Forms;
 
 namespace HandlebarsTextbox.Winforms
 {
+    /// <summary>
+    /// A Windows Forms TextBox control with Handlebars auto-complete and bracket handling features.
+    /// </summary>
     public class HandlebarsTextbox : TextBox
     {
         private ToolStripDropDown suggestionDropDown;
@@ -17,13 +20,22 @@ namespace HandlebarsTextbox.Winforms
 
         SuggestionMetadata rootSuggestions = new() { Name = "root" };
 
+        /// <summary>
+        /// Gets or sets whether pressing Tab inside brackets jumps to after closing brackets.
+        /// </summary>
         public bool EnableTabToExitBrackets { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets whether typing '{{' auto-closes with '}}' and places the caret between.
+        /// </summary>
         public bool EnableAutoCloseBrackets { get; set; } = true;
 
         [DllImport("user32.dll")]
         static extern bool GetCaretPos(out Point lpPoint);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HandlebarsTextbox"/> class.
+        /// </summary>
         public HandlebarsTextbox()
         {
             suggestionListBox = new ListBox
@@ -53,6 +65,9 @@ namespace HandlebarsTextbox.Winforms
             this.ParentChanged += (s, e) => HideSuggestion();
         }
 
+        /// <summary>
+        /// Gets the list of root suggestions for auto-complete.
+        /// </summary>
         public List<SuggestionMetadata> Suggestions => rootSuggestions.Children;
 
         private void HandleLostFocus(object? sender, EventArgs e)
@@ -64,6 +79,9 @@ namespace HandlebarsTextbox.Winforms
             }
         }
 
+        /// <summary>
+        /// Handles key up events to trigger or hide suggestions.
+        /// </summary>
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
@@ -192,6 +210,9 @@ namespace HandlebarsTextbox.Winforms
             }
         }
 
+        /// <summary>
+        /// Handles key down events for navigation and suggestion selection.
+        /// </summary>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             // Tab: if inside {{...}}, jump to after closing }}
@@ -241,6 +262,9 @@ namespace HandlebarsTextbox.Winforms
             base.OnKeyDown(e);
         }
 
+        /// <summary>
+        /// Handles key press events for bracket auto-close.
+        /// </summary>
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             base.OnKeyPress(e);
@@ -258,6 +282,11 @@ namespace HandlebarsTextbox.Winforms
             }
         }
 
+        /// <summary>
+        /// Shows the suggestion drop-down with the provided suggestions.
+        /// </summary>
+        /// <param name="suggestions">The list of suggestions to display.</param>
+        /// <param name="token">The current token under the caret.</param>
         private void ShowSuggestion(List<string> suggestions, string token)
         {
             suggestionListBox.BeginUpdate();
@@ -284,6 +313,9 @@ namespace HandlebarsTextbox.Winforms
             }
         }
 
+        /// <summary>
+        /// Hides the suggestion drop-down.
+        /// </summary>
         private void HideSuggestion()
         {
             if (suggestionDropDown.Visible)
@@ -311,6 +343,9 @@ namespace HandlebarsTextbox.Winforms
             }
         }
 
+        /// <summary>
+        /// Inserts the selected suggestion into the textbox at the caret position.
+        /// </summary>
         private void InsertSelectedSuggestion()
         {
             if (suggestionListBox.SelectedItem is string item && TryGetToken(out var token))
@@ -357,6 +392,11 @@ namespace HandlebarsTextbox.Winforms
             }
         }
 
+        /// <summary>
+        /// Attempts to extract the current token under the caret for suggestion logic.
+        /// </summary>
+        /// <param name="token">The extracted token, if successful.</param>
+        /// <returns>True if a valid token is found; otherwise, false.</returns>
         private bool TryGetToken([NotNullWhen(true)] out string? token)
         {
             try

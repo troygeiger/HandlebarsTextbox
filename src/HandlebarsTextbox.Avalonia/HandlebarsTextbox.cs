@@ -14,31 +14,55 @@ using System.Reflection;
 
 namespace HandlebarsTextbox.Avalonia
 {
+    /// <summary>
+    /// An Avalonia TextBox control with Handlebars auto-complete and bracket handling features.
+    /// </summary>
     public class HandlebarsTextbox : TextBox
     {
+        /// <summary>
+        /// The property for the list of suggestions.
+        /// </summary>
         public static readonly StyledProperty<IList<SuggestionMetadata>> SuggestionsProperty =
             AvaloniaProperty.Register<HandlebarsTextbox, IList<SuggestionMetadata>>(nameof(Suggestions), new List<SuggestionMetadata>());
 
+        /// <summary>
+        /// The property for enabling tab-to-exit bracket navigation.
+        /// </summary>
         public static readonly StyledProperty<bool> EnableTabToExitBracketsProperty =
             AvaloniaProperty.Register<HandlebarsTextbox, bool>(nameof(EnableTabToExitBrackets), true);
 
+        /// <summary>
+        /// The property for enabling auto-close brackets.
+        /// </summary>
         public static readonly StyledProperty<bool> EnableAutoCloseBracketsProperty =
             AvaloniaProperty.Register<HandlebarsTextbox, bool>(nameof(EnableAutoCloseBrackets), true);
 
+        /// <summary>
+        /// Gets the style key override for the control.
+        /// </summary>
         protected override Type StyleKeyOverride => typeof(TextBox);
 
+        /// <summary>
+        /// Gets or sets the list of suggestions for auto-complete.
+        /// </summary>
         public IList<SuggestionMetadata> Suggestions
         {
             get => GetValue(SuggestionsProperty);
             set => SetValue(SuggestionsProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets whether pressing Tab inside brackets jumps to after closing brackets.
+        /// </summary>
         public bool EnableTabToExitBrackets
         {
             get => GetValue(EnableTabToExitBracketsProperty);
             set => SetValue(EnableTabToExitBracketsProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets whether typing '{{' auto-closes with '}}' and places the caret between.
+        /// </summary>
         public bool EnableAutoCloseBrackets
         {
             get => GetValue(EnableAutoCloseBracketsProperty);
@@ -49,11 +73,17 @@ namespace HandlebarsTextbox.Avalonia
         private ListBox? _suggestionListBox;
         private double _popupOffsetX = 0;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HandlebarsTextbox"/> class.
+        /// </summary>
         public HandlebarsTextbox()
         {
             this.AttachedToVisualTree += OnAttachedToVisualTree;
         }
 
+        /// <summary>
+        /// Handles the loaded event to set up caret bounds tracking.
+        /// </summary>
         protected override void OnLoaded(RoutedEventArgs e)
         {
             var presenter = this.GetVisualDescendants().OfType<TextPresenter>().FirstOrDefault();
@@ -109,6 +139,9 @@ namespace HandlebarsTextbox.Avalonia
             HideSuggestion();
         }
 
+        /// <summary>
+        /// Handles key up events to trigger or hide suggestions.
+        /// </summary>
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
@@ -228,6 +261,9 @@ namespace HandlebarsTextbox.Avalonia
             }
         }
 
+        /// <summary>
+        /// Handles key down events for navigation and suggestion selection.
+        /// </summary>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             // Tab: if inside {{...}}, jump to after closing }}
@@ -274,6 +310,9 @@ namespace HandlebarsTextbox.Avalonia
             base.OnKeyDown(e);
         }
 
+        /// <summary>
+        /// Handles text input events for bracket auto-close.
+        /// </summary>
         protected override void OnTextInput(TextInputEventArgs e)
         {
             base.OnTextInput(e);
@@ -293,6 +332,9 @@ namespace HandlebarsTextbox.Avalonia
             }
         }
 
+        /// <summary>
+        /// Inserts the selected suggestion into the textbox at the caret position.
+        /// </summary>
         private void InsertSelectedSuggestion()
         {
             if (_suggestionListBox?.SelectedItem is SuggestionMetadata meta && TryGetToken(out var token))
@@ -343,6 +385,11 @@ namespace HandlebarsTextbox.Avalonia
             }
         }
 
+        /// <summary>
+        /// Attempts to extract the current token under the caret for suggestion logic.
+        /// </summary>
+        /// <param name="token">The extracted token, if successful.</param>
+        /// <returns>True if a valid token is found; otherwise, false.</returns>
         private bool TryGetToken(out string? token)
         {
             token = null;
@@ -394,6 +441,11 @@ namespace HandlebarsTextbox.Avalonia
             }
         }
 
+        /// <summary>
+        /// Shows the suggestion popup with the provided suggestions.
+        /// </summary>
+        /// <param name="suggestions">The list of suggestions to display.</param>
+        /// <param name="token">The current token under the caret.</param>
         private void ShowSuggestion(List<SuggestionMetadata> suggestions, string token)
         {
             if (_suggestionListBox == null || _suggestionPopup == null) return;
@@ -406,6 +458,9 @@ namespace HandlebarsTextbox.Avalonia
             _suggestionPopup.ShowAt(this);
         }
 
+        /// <summary>
+        /// Hides the suggestion popup.
+        /// </summary>
         private void HideSuggestion()
         {
             if (_suggestionPopup != null)

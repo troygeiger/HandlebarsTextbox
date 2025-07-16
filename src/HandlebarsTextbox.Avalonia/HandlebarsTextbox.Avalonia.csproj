@@ -7,6 +7,7 @@
     <OutputType>Library</OutputType>
     <AssemblyName>HandlebarsTextbox.Avalonia</AssemblyName>
     <RootNamespace>HandlebarsTextbox.Avalonia</RootNamespace>
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.0" />

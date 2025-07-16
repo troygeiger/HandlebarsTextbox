@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>HandlebarsTextbox.Winforms</AssemblyName>
     <RootNamespace>HandlebarsTextbox.Winforms</RootNamespace>
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
 </Project>
