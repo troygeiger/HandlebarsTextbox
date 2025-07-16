@@ -19,12 +19,30 @@ namespace HandlebarsTextbox.Avalonia
         public static readonly StyledProperty<IList<SuggestionMetadata>> SuggestionsProperty =
             AvaloniaProperty.Register<HandlebarsTextbox, IList<SuggestionMetadata>>(nameof(Suggestions), new List<SuggestionMetadata>());
 
+        public static readonly StyledProperty<bool> EnableTabToExitBracketsProperty =
+            AvaloniaProperty.Register<HandlebarsTextbox, bool>(nameof(EnableTabToExitBrackets), true);
+
+        public static readonly StyledProperty<bool> EnableAutoCloseBracketsProperty =
+            AvaloniaProperty.Register<HandlebarsTextbox, bool>(nameof(EnableAutoCloseBrackets), true);
+
         protected override Type StyleKeyOverride => typeof(TextBox);
 
         public IList<SuggestionMetadata> Suggestions
         {
             get => GetValue(SuggestionsProperty);
             set => SetValue(SuggestionsProperty, value);
+        }
+
+        public bool EnableTabToExitBrackets
+        {
+            get => GetValue(EnableTabToExitBracketsProperty);
+            set => SetValue(EnableTabToExitBracketsProperty, value);
+        }
+
+        public bool EnableAutoCloseBrackets
+        {
+            get => GetValue(EnableAutoCloseBracketsProperty);
+            set => SetValue(EnableAutoCloseBracketsProperty, value);
         }
 
         private Flyout? _suggestionPopup;
@@ -212,6 +230,21 @@ namespace HandlebarsTextbox.Avalonia
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            // Tab: if inside {{...}}, jump to after closing }}
+            if (EnableTabToExitBrackets && e.Key == Key.Tab)
+            {
+                int caret = SelectionStart;
+                string text = Text;
+                int openIdx = text.LastIndexOf("{{", caret - 1, caret);
+                int closeIdx = text.IndexOf("}}", caret);
+                if (openIdx != -1 && closeIdx != -1 && openIdx < caret && caret <= closeIdx)
+                {
+                    SelectionStart = closeIdx + 2;
+                    SelectionEnd = SelectionStart;
+                    e.Handled = true;
+                    return;
+                }
+            }
             // Only handle navigation if TextBox has focus and suggestionPopup is visible
             if (IsFocused && _suggestionPopup?.IsOpen == true)
             {
@@ -239,6 +272,25 @@ namespace HandlebarsTextbox.Avalonia
                 }
             }
             base.OnKeyDown(e);
+        }
+
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            base.OnTextInput(e);
+            // If user types '{{', auto-close with '}}' and place caret between
+            if (EnableAutoCloseBrackets && e.Text == "{")
+            {
+                int caret = SelectionStart;
+                // Check if previous char is also '{'
+                if (caret >= 2 && Text.Substring(caret - 2, 2) == "{{")
+                {
+                    // Insert '}}' at caret
+                    Text = Text.Insert(caret, "}}");
+                    SelectionStart = caret; // Place caret between {{ and }}
+                    SelectionEnd = caret;
+                    e.Handled = true;
+                }
+            }
         }
 
         private void InsertSelectedSuggestion()

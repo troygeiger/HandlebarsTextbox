@@ -17,7 +17,9 @@ namespace HandlebarsTextbox.Winforms
 
         SuggestionMetadata rootSuggestions = new() { Name = "root" };
 
-        
+        public bool EnableTabToExitBrackets { get; set; } = true;
+
+        public bool EnableAutoCloseBrackets { get; set; } = true;
 
         [DllImport("user32.dll")]
         static extern bool GetCaretPos(out Point lpPoint);
@@ -192,6 +194,22 @@ namespace HandlebarsTextbox.Winforms
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            // Tab: if inside {{...}}, jump to after closing }}
+            if (EnableTabToExitBrackets && e.KeyCode == Keys.Tab)
+            {
+                int caret = this.SelectionStart;
+                string text = this.Text;
+                int openIdx = text.LastIndexOf("{{", caret - 1, caret);
+                int closeIdx = text.IndexOf("}}", caret);
+                if (openIdx != -1 && closeIdx != -1 && openIdx < caret && caret <= closeIdx)
+                {
+                    this.SelectionStart = closeIdx + 2;
+                    this.SelectionLength = 0;
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    return;
+                }
+            }
             // Only handle navigation if TextBox has focus and suggestionDropDown is visible
             if (this.Focused && suggestionDropDown.Visible)
             {
@@ -221,6 +239,23 @@ namespace HandlebarsTextbox.Winforms
                 }
             }
             base.OnKeyDown(e);
+        }
+
+        protected override void OnKeyPress(KeyPressEventArgs e)
+        {
+            base.OnKeyPress(e);
+            // If user types '{{', auto-close with '}}' and place caret between
+            if (EnableAutoCloseBrackets && e.KeyChar == '{')
+            {
+                int caret = this.SelectionStart;
+                if (caret >= 2 && this.Text.Substring(caret - 2, 2) == "{{")
+                {
+                    this.Text = this.Text.Insert(caret, "}}");
+                    this.SelectionStart = caret;
+                    this.SelectionLength = 0;
+                    e.Handled = true;
+                }
+            }
         }
 
         private void ShowSuggestion(List<string> suggestions, string token)
