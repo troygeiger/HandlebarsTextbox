@@ -224,7 +224,9 @@ namespace HandlebarsTextbox.Avalonia
                             _suggestionListBox.SelectedIndex = System.Math.Min(_suggestionListBox.ItemCount - 1, idx + 1);
                         else if (e.Key == Key.Up)
                             _suggestionListBox.SelectedIndex = System.Math.Max(0, idx - 1);
-                        _suggestionListBox.Focus();
+                        // Only set focus if not already focused
+                        if (!_suggestionListBox.IsFocused)
+                            _suggestionListBox.Focus();
                     }
                     e.Handled = true;
                     return;
@@ -343,9 +345,11 @@ namespace HandlebarsTextbox.Avalonia
         private void ShowSuggestion(List<SuggestionMetadata> suggestions, string token)
         {
             if (_suggestionListBox == null || _suggestionPopup == null) return;
-            // Instead of List<string>, filter and pass List<SuggestionMetadata>
+            // Only set SelectedIndex = 0 if ItemsSource is different or popup is not open
+            bool itemsChanged = _suggestionListBox.ItemsSource != suggestions;
             _suggestionListBox.ItemsSource = suggestions;
-            _suggestionListBox.SelectedIndex = 0;
+            if ((itemsChanged || !_suggestionPopup.IsOpen) && _suggestionListBox.SelectedIndex == -1)
+                _suggestionListBox.SelectedIndex = 0;
             _suggestionPopup.HorizontalOffset = _popupOffsetX;
             _suggestionPopup.ShowAt(this);
         }
