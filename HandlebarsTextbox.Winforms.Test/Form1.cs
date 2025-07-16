@@ -12,7 +12,8 @@ public partial class Form1 : Form
                     Name = "Order",
                     Type = SuggestionType.Data,
                     Children = [
-                        new SuggestionMetadata { Name = "OrderNum", Type = SuggestionType.Data }
+                        new SuggestionMetadata { Name = "OrderNum", Type = SuggestionType.Data },
+                        new (){Name = "CustomerId", Type = SuggestionType.Data},
                     ]
                 },
                 new SuggestionMetadata { Name = "Onion", Type = SuggestionType.Data },
@@ -25,7 +26,8 @@ public partial class Form1 : Form
                     ]
                 },
                 new SuggestionMetadata { Name = "MyPartial", Type = SuggestionType.Partial },
-                new SuggestionMetadata { Name = "SomeHelper", Type = SuggestionType.Helper }
+                new SuggestionMetadata { Name = "SomeHelper", Type = SuggestionType.Helper },
+                new SuggestionMetadata { Name = "MyBlockHelper", Type = SuggestionType.BlockHelper },
             ]);
     }
 }

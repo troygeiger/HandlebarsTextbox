@@ -126,6 +126,29 @@ namespace HandlebarsTextbox.Avalonia
                 var segment = spaceParts[segIdx];
                 bool isAfterPartial = token.TrimStart().StartsWith('>');
                 string trimmedSegment = segment.TrimStart();
+
+                // BlockHelper support
+                if (segment.StartsWith("#"))
+                {
+                    string blockHelperPrefix = segment.Substring(1); // after #
+                    var blockHelpers = Suggestions
+                        .Where(kv => kv.Type == SuggestionType.BlockHelper && kv.Name.StartsWith(blockHelperPrefix, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    if (blockHelpers.Count == 1 && string.Equals(blockHelpers[0].Name, blockHelperPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        HideSuggestion();
+                    }
+                    else if (blockHelpers.Any())
+                    {
+                        ShowSuggestion(blockHelpers, blockHelperPrefix);
+                    }
+                    else
+                    {
+                        HideSuggestion();
+                    }
+                    return;
+                }
+
                 if (isAfterPartial)
                 {
                     string partialPrefix = segment == ">" ? string.Empty : segment;
@@ -166,7 +189,7 @@ namespace HandlebarsTextbox.Avalonia
                 }
                 var lastPart = pathParts.Last();
                 var dataMeta = current
-                    .Where(kv => (isHelper ? kv.Type == SuggestionType.Data : true) && kv.Name.StartsWith(lastPart, System.StringComparison.OrdinalIgnoreCase))
+                    .Where(kv => (kv.Type == SuggestionType.Data || kv.Type == SuggestionType.Helper) && kv.Name.StartsWith(lastPart, System.StringComparison.OrdinalIgnoreCase))
                     .ToList();
                 if (dataMeta.Count == 1 && string.Equals(dataMeta[0].Name, lastPart, System.StringComparison.OrdinalIgnoreCase))
                 {
@@ -242,6 +265,11 @@ namespace HandlebarsTextbox.Avalonia
                 {
                     spaceParts[segIdx] = ">" + item;
                 }
+                else if (segment.StartsWith("#"))
+                {
+                    // Only insert the name after the #
+                    spaceParts[segIdx] = "#" + item;
+                }
                 else
                 {
                     var pathParts = segment.Split('.');
@@ -274,8 +302,6 @@ namespace HandlebarsTextbox.Avalonia
                 int closeIdx = text.IndexOf("}}", openIdx + 2);
                 if (closeIdx != -1)
                 {
-                    if (!(openIdx + 2 <= caret && caret < closeIdx))
-                        return false;
                     for (int k = caret; k < closeIdx; k++)
                     {
                         if (text[k] == '{' || text[k] == '}')

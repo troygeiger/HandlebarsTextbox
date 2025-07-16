@@ -6,7 +6,8 @@ namespace HandlebarsTextbox.Avalonia
     {
         Data,
         Partial,
-        Helper
+        Helper,
+        BlockHelper // Added BlockHelper
     }
 
     public class SuggestionMetadata

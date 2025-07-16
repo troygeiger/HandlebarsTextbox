@@ -65,11 +65,7 @@ namespace HandlebarsTextbox.Winforms
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
-            if (this.SelectionStart < 3 || this.SelectionLength > 0)
-            {
-                HideSuggestion();
-                return;
-            }
+            
             if (e.Modifiers != Keys.None || e.KeyCode == Keys.Enter)
             {
                 HideSuggestion();
@@ -100,13 +96,36 @@ namespace HandlebarsTextbox.Winforms
                     segStart = segEnd + 1;
                 }
                 var segment = spaceParts[segIdx];
-                // Partial context: segment starts with '>' or caret is after '>' and whitespace
                 bool isAfterPartial = token.TrimStart().StartsWith('>');
                 string trimmedSegment = segment.TrimStart();
+
+                // BlockHelper support
+                if (segment.StartsWith("#"))
+                {
+                    string blockHelperPrefix = segment.Substring(1); // after #
+                    var blockHelpers = Suggestions
+                        .Where(kv => kv.Type == SuggestionType.BlockHelper && kv.Name.StartsWith(blockHelperPrefix, StringComparison.OrdinalIgnoreCase))
+                        .Select(kv => kv.Name)
+                        .ToList();
+                    if (blockHelpers.Count == 1 && string.Equals(blockHelpers[0], blockHelperPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        HideSuggestion();
+                    }
+                    else if (blockHelpers.Any())
+                    {
+                        ShowSuggestion(blockHelpers, blockHelperPrefix);
+                    }
+                    else
+                    {
+                        HideSuggestion();
+                    }
+                    return;
+                }
+
+                // Partial context: segment starts with '>' or caret is after '>' and whitespace
                 if (isAfterPartial)
                 {
                     string partialPrefix = segment == ">" ? string.Empty : segment;
-                    
                     var partialMeta = Suggestions
                         .Where(kv => kv.Type == SuggestionType.Partial && isAfterPartial && kv.Name.StartsWith(partialPrefix, StringComparison.OrdinalIgnoreCase))
                         .Select(kv => kv.Name)
@@ -148,7 +167,7 @@ namespace HandlebarsTextbox.Winforms
                 // Last part is what we're currently typing
                 var lastPart = pathParts.Last();
                 var dataMeta = current
-                    .Where(kv => (isHelper ? kv.Type == SuggestionType.Data : true) && kv.Name.StartsWith(lastPart, StringComparison.OrdinalIgnoreCase))
+                    .Where(kv => (kv.Type == SuggestionType.Helper || kv.Type == SuggestionType.Data) && kv.Name.StartsWith(lastPart, StringComparison.OrdinalIgnoreCase))
                     .Select(kv => kv.Name)
                     .ToList();
                 // If there is a single exact match, do not show suggestions
@@ -284,6 +303,11 @@ namespace HandlebarsTextbox.Winforms
                     // For partials, preserve the '>'
                     spaceParts[segIdx] = ">" + item;
                 }
+                else if (segment.StartsWith("#"))
+                {
+                    // For block helpers, preserve the '#'
+                    spaceParts[segIdx] = "#" + item;
+                }
                 else
                 {
                     var pathParts = segment.Split('.');
@@ -316,11 +340,11 @@ namespace HandlebarsTextbox.Winforms
                 // Only allow if caret is strictly inside the brackets
                 if (closeIdx != -1)
                 {
-                    if (!(openIdx + 2 <= caret && caret < closeIdx))
+                    /*if (!(openIdx + 2 <= caret && caret < closeIdx))
                     {
                         token = null;
                         return false;
-                    }
+                    }*/
                     // Ensure no stray braces between caret and closeIdx
                     for (int k = caret; k < closeIdx; k++)
                     {

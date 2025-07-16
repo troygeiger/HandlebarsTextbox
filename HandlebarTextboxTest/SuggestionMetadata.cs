@@ -10,7 +10,8 @@ namespace HandlebarsTextbox.Winforms
     {
         Data,
         Partial,
-        Helper
+        Helper,
+        BlockHelper // Added BlockHelper
     }
 
     public class SuggestionMetadata

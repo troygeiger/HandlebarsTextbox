@@ -28,6 +28,7 @@ public partial class MainWindowViewModel : ViewModelBase
             }
         },
         new SuggestionMetadata { Name = "MyPartial", Type = SuggestionType.Partial },
-        new SuggestionMetadata { Name = "SomeHelper", Type = SuggestionType.Helper }
+        new SuggestionMetadata { Name = "SomeHelper", Type = SuggestionType.Helper },
+        new SuggestionMetadata { Name = "MyBlockHelper", Type = SuggestionType.BlockHelper },
     ]);
 }
