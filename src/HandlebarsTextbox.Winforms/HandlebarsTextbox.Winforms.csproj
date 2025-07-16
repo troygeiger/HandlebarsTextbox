@@ -10,8 +10,4 @@
     <RootNamespace>HandlebarsTextbox.Winforms</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="HandlebarTextboxTest.csproj" />
-  </ItemGroup>
-
 </Project>

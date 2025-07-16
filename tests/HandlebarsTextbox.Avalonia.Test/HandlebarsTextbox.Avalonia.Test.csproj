@@ -27,6 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HandlebarsTextbox.Avalonia\HandlebarsTextbox.Avalonia.csproj" />
+    <ProjectReference Include="..\..\src\HandlebarsTextbox.Avalonia\HandlebarsTextbox.Avalonia.csproj" />
   </ItemGroup>
+
+  
 </Project>

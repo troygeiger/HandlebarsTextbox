@@ -28,7 +28,7 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
-        handlebarTextbox1 = new HandlebarTextbox();
+        handlebarTextbox1 = new HandlebarsTextbox();
         SuspendLayout();
         // 
         // handlebarTextbox1
@@ -52,5 +52,5 @@ partial class Form1
 
     #endregion
 
-    private HandlebarsTextbox.Winforms.HandlebarTextbox handlebarTextbox1;
+    private global::HandlebarsTextbox.Winforms.HandlebarsTextbox handlebarTextbox1;
 }

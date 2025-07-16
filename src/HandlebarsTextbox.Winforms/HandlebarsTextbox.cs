@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace HandlebarsTextbox.Winforms
 {
-    public class HandlebarTextbox : TextBox
+    public class HandlebarsTextbox : TextBox
     {
         private ToolStripDropDown suggestionDropDown;
         private ListBox suggestionListBox;
@@ -24,7 +24,7 @@ namespace HandlebarsTextbox.Winforms
         [DllImport("user32.dll")]
         static extern bool GetCaretPos(out Point lpPoint);
 
-        public HandlebarTextbox()
+        public HandlebarsTextbox()
         {
             suggestionListBox = new ListBox
             {
