@@ -272,12 +272,14 @@ namespace HandlebarsTextbox.Winforms
             if (EnableAutoCloseBrackets && e.KeyChar == '{')
             {
                 int caret = this.SelectionStart;
-                if (caret >= 2 && this.Text.Substring(caret - 2, 2) == "{{")
+                // Check if the previous character is '{' (the first '{' of '{{')
+                if (caret > 0 && this.Text[caret - 1] == '{')
                 {
+                    // Insert '}}' at the caret position, before the second '{' is added to Text
                     this.Text = this.Text.Insert(caret, "}}");
                     this.SelectionStart = caret;
                     this.SelectionLength = 0;
-                    e.Handled = true;
+                    e.Handled = false; // Let the second '{' be added by the base handler
                 }
             }
         }
