@@ -6,6 +6,7 @@ using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -87,20 +88,18 @@ namespace HandlebarsTextbox.Avalonia
             if (presenter != null)
             {
                 var boundsField = typeof(TextPresenter).GetField("_caretBounds", BindingFlags.NonPublic | BindingFlags.Instance);
-                    
-                presenter.CaretBoundsChanged += (s, e) =>
+                presenter.CaretBoundsChanged += (_, _) =>
                 {
-                    var bounds = boundsField?.GetValue(presenter) as Rect?;
-                    if (bounds.HasValue)
+                    if (boundsField?.GetValue(presenter) is Rect bounds)
                     {
-                        _popupOffsetX = bounds.Value.X;
+                        _popupOffsetX = bounds.X;
                     }
                 };
             }
             base.OnLoaded(e);
         }
 
-        private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        private void OnAttachedToVisualTree(object? _, VisualTreeAttachmentEventArgs e)
         {
             if (_suggestionPopup != null) return;
             _suggestionListBox = new ListBox
@@ -157,7 +156,7 @@ namespace HandlebarsTextbox.Avalonia
             if (TryGetToken(out var token))
             {
                 int caret = SelectionStart;
-                int openIdx = Text.LastIndexOf("{{", caret - 1, caret);
+                int openIdx = Text.LastIndexOf("{{", caret - 1, caret, StringComparison.Ordinal);
                 int caretInToken = caret - (openIdx + 2);
                 var spaceParts = token.Split(' ');
                 int segStart = 0, segEnd = 0, segIdx = 0;
@@ -387,7 +386,7 @@ namespace HandlebarsTextbox.Avalonia
         /// </summary>
         /// <param name="token">The extracted token, if successful.</param>
         /// <returns>True if a valid token is found; otherwise, false.</returns>
-        private bool TryGetToken(out string? token)
+        private bool TryGetToken([NotNullWhen(true)] out string? token)
         {
             token = null;
             try

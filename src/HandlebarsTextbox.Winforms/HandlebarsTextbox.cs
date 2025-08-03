@@ -41,7 +41,7 @@ namespace HandlebarsTextbox.Winforms
             };
             suggestionListBox.Click += SuggestionListBox_Click;
             suggestionListBox.KeyDown += SuggestionListBox_KeyDown;
-            suggestionListBox.Leave += (s, e) => HideSuggestion();
+            suggestionListBox.Leave += (_, _) => HideSuggestion();
 
             suggestionDropDown = new ToolStripDropDown
             {
@@ -56,7 +56,7 @@ namespace HandlebarsTextbox.Winforms
             suggestionDropDown.Items.Add(host);
 
             this.LostFocus += HandleLostFocus;
-            this.ParentChanged += (s, e) => HideSuggestion();
+            this.ParentChanged += (_, _) => HideSuggestion();
         }
 
         /// <summary>
