@@ -5,7 +5,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <MinVerTagPrefix>v</MinVerTagPrefix>
-        <MinVerMinimumMajorMinor>2.0</MinVerMinimumMajorMinor>
+        <MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
         <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
         <PackageProjectUrl>https://github.com/troygeiger/HandlebarsTextbox</PackageProjectUrl>
         <PackageTags>Handlebars;autocomplete;WinForms;Avalonia</PackageTags>
