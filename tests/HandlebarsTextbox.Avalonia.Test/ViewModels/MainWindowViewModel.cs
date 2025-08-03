@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using HandlebarsTextbox.Avalonia;
 
 namespace HandlebarsTextbox.Avalonia.Test.ViewModels;
 
