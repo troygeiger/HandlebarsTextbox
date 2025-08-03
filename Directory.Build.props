@@ -6,7 +6,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <MinVerTagPrefix>v</MinVerTagPrefix>
         <MinVerMinimumMajorMinor>2.0</MinVerMinimumMajorMinor>
-        <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+        <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
         <PackageProjectUrl>https://github.com/troygeiger/HandlebarsTextbox</PackageProjectUrl>
         <PackageTags>Handlebars;autocomplete;WinForms;Avalonia</PackageTags>
         <RepositoryUrl>https://github.com/troygeiger/HandlebarsTextbox</RepositoryUrl>

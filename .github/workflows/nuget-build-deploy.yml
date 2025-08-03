@@ -21,17 +21,16 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
 
-    - name: Restore the application
-      run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
+    - name: Pack WinForms project
+      run: dotnet pack $env:Winforms_Project -c $env:Configuration
 
-    - name: Build WinForms project
-      run: msbuild $env:Winforms_Project /p:Configuration=$env:Configuration
-
-    - name: Build Avalonia project
-      run: msbuild $env:Avalonia_Project /p:Configuration=$env:Configuration
+    - name: Pack Avalonia project
+      run: dotnet pack $env:Avalonia_Project -c $env:Configuration
 
     - name: Push WinForms package to NuGet.org
       run: dotnet nuget push .\src\HandlebarsTextbox.Winforms\bin\Release\HandlebarsTextbox.Winforms.*.nupkg --api-key "$env:NUGET_TOKEN" --source https://api.nuget.org/v3/index.json --skip-duplicate
@@ -42,4 +41,3 @@ jobs:
       run: dotnet nuget push .\src\HandlebarsTextbox.Avalonia\bin\Release\HandlebarsTextbox.Avalonia.*.nupkg --api-key "$env:NUGET_TOKEN" --source https://api.nuget.org/v3/index.json --skip-duplicate
       env:
         NUGET_TOKEN: ${{ secrets.NUGET_KEY }}
-
