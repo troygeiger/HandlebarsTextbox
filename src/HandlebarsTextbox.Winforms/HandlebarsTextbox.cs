@@ -354,7 +354,7 @@ namespace HandlebarsTextbox.Winforms
             {
                 int caret = this.SelectionStart;
                 int openIdx = this.Text.LastIndexOf("{{", caret - 1, caret);
-                int start = this.SelectionStart - token.Length;
+                int start = openIdx + 2;
                 int caretInToken = caret - (openIdx + 2);
                 var spaceParts = token.Split(' ');
                 int segStart = 0, segEnd = 0, segIdx = 0;
